@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0c0b04">
+  <meta name="description" content="A neon-yellow brain-dump and task organiser.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="book.svg" type="image/svg+xml">
+  <link rel="icon" href="book-192.png" type="image/png" sizes="192x192">
+  <link rel="apple-touch-icon" href="book-192.png">
+  <title>RESEARCH</title>
+  <style>
+    :root { color-scheme: dark; --bg:#0c0b04; --panel:#1d1b08; --pink:#ffe500; --pink2:#fff36a; --muted:#b8b37c; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; background:radial-gradient(ellipse at 50% -15%,#292708 0%,var(--bg) 48%); color:#fffde8; font-family:"Gill Sans","Gill Sans MT",Calibri,"Trebuchet MS",sans-serif; }
+    main { width:min(100%,620px); margin:0 auto; padding:calc(22px + env(safe-area-inset-top)) 18px calc(28px + env(safe-area-inset-bottom)); }
+    header { display:flex; align-items:center; gap:13px; margin:5px 0 28px; }
+    .logo { width:49px; height:49px; filter:drop-shadow(0 0 7px #ffe500) drop-shadow(0 0 17px #a83cff88); flex:none; }
+    h1 { margin:0; font-size:28px; letter-spacing:.19em; font-weight:700; }
+    .tagline { margin-top:4px; color:var(--muted); font-size:11px; letter-spacing:.17em; }
+    .stats { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+    .section { color:var(--pink2); font-size:12px; font-weight:700; letter-spacing:.15em; }
+    .count { color:#fff6a0; font-size:12px; letter-spacing:.08em; }
+    .progress { height:3px; background:#3a360c; border-radius:9px; overflow:hidden; margin-bottom:18px; }
+    .progress > div { height:100%; width:0; background:var(--pink); box-shadow:0 0 10px var(--pink); transition:width .2s; }
+    form { display:flex; gap:9px; margin-bottom:18px; }
+    input { min-width:0; flex:1; background:#181609; color:#fff; border:1px solid #b5a500; border-radius:11px; padding:14px 13px; font:inherit; font-size:16px; outline:none; box-shadow:inset 0 0 12px #a83cff12; }
+    input:focus { border-color:var(--pink2); box-shadow:0 0 0 2px #a83cff24,0 0 15px #a83cff25; }
+    input::placeholder { color:#a88ab9; }
+    button { font:inherit; cursor:pointer; }
+    .add { border:1px solid var(--pink); color:#fff; background:#3c370d; border-radius:11px; padding:0 17px; font-size:14px; font-weight:700; box-shadow:0 0 12px #a83cff35; }
+    .add:active { background:#544d0d; }
+    .task-list { display:flex; flex-direction:column; gap:9px; }
+    .task { display:flex; align-items:center; gap:10px; min-height:57px; padding:9px 11px; background:linear-gradient(110deg,#25230b,#131207); border:1px solid #b5a500; border-radius:12px; box-shadow:0 0 10px #a83cff16,inset 0 0 12px #a83cff09; touch-action:pan-y; }
+    .task.dragging { opacity:.35; border-style:dashed; }
+    .task.over { border-color:#fff59b; box-shadow:0 0 17px #a83cff77; }
+    .handle { color:#ffef73; font-size:20px; line-height:1; padding:5px 2px; cursor:grab; user-select:none; touch-action:none; }
+    .task input[type=checkbox] { appearance:none; -webkit-appearance:none; width:22px; height:22px; flex:none; border:1.7px solid var(--pink2); border-radius:6px; background:#10071b; margin:0; cursor:pointer; box-shadow:0 0 8px #a83cff30; }
+    .task input[type=checkbox]:checked { background:var(--pink); box-shadow:0 0 12px #a83cff99; }
+    .task input[type=checkbox]:checked::after { content:"✓"; display:block; color:#2b290c; text-align:center; font-weight:900; line-height:19px; }
+    .task-text { flex:1; min-width:0; overflow-wrap:anywhere; font-size:16px; line-height:1.3; }
+    .empty { min-height:49px; border:1px dashed #655c11; border-radius:11px; display:flex; align-items:center; padding:0 14px; color:#8e8747; font-size:13px; letter-spacing:.04em; }
+    .hint { text-align:center; color:#c6bd75; font-size:11px; letter-spacing:.12em; margin:20px 0 0; }
+    .footer { margin-top:25px; text-align:center; color:#a39a51; font-size:11px; }
+    .toast { position:fixed; left:50%; bottom:calc(22px + env(safe-area-inset-bottom)); transform:translate(-50%,20px); opacity:0; pointer-events:none; background:#322f0e; border:1px solid var(--pink); border-radius:30px; padding:10px 16px; color:#fff9c9; box-shadow:0 0 18px #a83cff55; transition:.2s; white-space:nowrap; }
+    .toast.show { opacity:1; transform:translate(-50%,0); }
+    @media (min-width:600px) { main { padding-top:38px; } }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <img class="logo" src="book.svg" alt="">
+    <div><h1>RESEARCH</h1><div class="tagline">RESEARCH · ORGANISE · DISCOVER</div></div>
+  </header>
+  <div class="stats"><div class="section">YOUR TASKS</div><div class="count" id="count">0 / 40 FILLED</div></div>
+  <div class="progress"><div id="progress"></div></div>
+  <form id="add-form" autocomplete="off">
+    <input id="new-task" maxlength="180" placeholder="Add a task to your brain dump…" aria-label="New task">
+    <button class="add" type="submit">ADD +</button>
+  </form>
+  <section class="task-list" id="tasks" aria-label="Task list"></section>
+  <p class="hint">HOLD THE GRIP HANDLE TO REORDER YOUR TASKS</p>
+  <div class="footer">YOUR LIST IS SAVED ON THIS DEVICE</div>
+</main>
+<div class="toast" id="toast" role="status"></div>
+<script>
+(()=>{'use strict';const LIMIT=40,KEY='research.tasks.v1';const list=document.getElementById('tasks'),input=document.getElementById('new-task'),count=document.getElementById('count'),progress=document.getElementById('progress'),toast=document.getElementById('toast');let tasks=[];try{const saved=JSON.parse(localStorage.getItem(KEY)||'[]');if(Array.isArray(saved))tasks=saved.filter(x=>x&&typeof x.text==='string').slice(0,LIMIT).map((x,i)=>({...x,id:x.id||'old-'+i}));}catch{}let toastTimer;function showToast(message){toast.textContent=message;toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('show'),1800)}function save(){try{localStorage.setItem(KEY,JSON.stringify(tasks))}catch{showToast('Could not save on this device')}}function render(){list.replaceChildren();tasks.forEach((task,index)=>{const row=document.createElement('div');row.className='task';row.dataset.index=index;const handle=document.createElement('span');handle.className='handle';handle.textContent='⠿';handle.setAttribute('role','button');handle.setAttribute('aria-label','Drag to reorder '+task.text);handle.title='Drag to reorder';const check=document.createElement('input');check.type='checkbox';check.setAttribute('aria-label','Complete '+task.text);check.addEventListener('change',()=>{tasks.splice(index,1);save();render();showToast('Task completed · space freed')});const label=document.createElement('div');label.className='task-text';label.textContent=task.text;row.append(handle,check,label);list.append(row);enableDrag(row,handle)});for(let i=tasks.length;i<LIMIT;i++){const slot=document.createElement('div');slot.className='empty';slot.textContent='＋  EMPTY SPACE';list.append(slot)}count.textContent=tasks.length+' / '+LIMIT+' FILLED';progress.style.width=(tasks.length/LIMIT*100)+'%'}document.getElementById('add-form').addEventListener('submit',e=>{e.preventDefault();const text=input.value.trim();if(!text)return;if(tasks.length>=LIMIT){showToast('All 40 spaces are filled');return}tasks.push({id:typeof crypto.randomUUID==='function'?crypto.randomUUID():String(Date.now()+Math.random()),text});input.value='';save();render();input.focus()});
+function enableDrag(row,handle){
+let pid=null,startY=0,dragging=false,marker=null,ghost=null;
+handle.addEventListener('pointerdown',e=>{
+ if(pid!==null||(e.pointerType==='mouse'&&e.button!==0))return;
+ pid=e.pointerId;startY=e.clientY;dragging=false;
+ handle.setPointerCapture(pid);e.preventDefault();
+});
+handle.addEventListener('pointermove',e=>{
+ if(e.pointerId!==pid)return;
+ if(!dragging&&Math.abs(e.clientY-startY)<5)return;
+ if(!dragging){
+  dragging=true;
+  marker=document.createElement('div');
+  marker.style.cssText='height:57px;border:2px dashed #ffe500;border-radius:12px;box-sizing:border-box';
+  row.after(marker);
+  ghost=row.cloneNode(true);
+  const rect=row.getBoundingClientRect();
+  ghost.style.cssText='position:fixed;z-index:9999;pointer-events:none;left:'+rect.left+'px;top:'+rect.top+'px;width:'+rect.width+'px;opacity:.93;box-shadow:0 0 24px #ffe500;transform:none;touch-action:none';
+  document.body.appendChild(ghost);
+  row.style.display='none';
+ }
+ const rect=ghost.getBoundingClientRect();
+ ghost.style.top=(e.clientY-rect.height/2)+'px';
+ const candidates=[...list.querySelectorAll('.task')].filter(el=>el!==row);
+ const next=candidates.find(el=>e.clientY<el.getBoundingClientRect().top+el.getBoundingClientRect().height/2);
+ if(next)list.insertBefore(marker,next);else list.appendChild(marker);
+ if(e.clientY<65)window.scrollBy(0,-12);
+ else if(e.clientY>innerHeight-65)window.scrollBy(0,12);
+ e.preventDefault();
+});
+function finish(e,cancelled){
+ if(e.pointerId!==pid)return;
+ pid=null;
+ if(!dragging)return;
+ dragging=false;
+ if(!cancelled){
+  list.insertBefore(row,marker);
+  const order=[...list.querySelectorAll('.task')].map(el=>tasks[Number(el.dataset.index)]);
+  if(order.length===tasks.length){tasks=order;save();}
+ }
+ row.style.display='';
+ marker?.remove();ghost?.remove();marker=null;ghost=null;
+ render();
+}
+handle.addEventListener('pointerup',e=>finish(e,false));
+handle.addEventListener('pointercancel',e=>finish(e,true));
+}render();if('serviceWorker'in navigator&&location.protocol.startsWith('http'))window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).catch(()=>{}));})();
+</script>
+</body>
+</html>

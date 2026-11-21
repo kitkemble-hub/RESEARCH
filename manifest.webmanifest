@@ -1,0 +1,24 @@
+{
+  "name": "RESEARCH – Neon Task Organiser",
+  "short_name": "RESEARCH",
+  "description": "A neon-yellow research task organiser.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0c0b04",
+  "theme_color": "#0c0b04",
+  "icons": [
+    {
+      "src": "book-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "book-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
